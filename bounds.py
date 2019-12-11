@@ -235,7 +235,7 @@ def display(inclusion, exclusion, data, coordinates):
             style_function=lambda feature: colorstyles['inclusion']
         )
 
-        folium.Popup(sf).add_to(geojson)
+        folium.Tooltip(sf).add_to(geojson)
 
         geojson.add_to(m)
 
@@ -250,7 +250,7 @@ def display(inclusion, exclusion, data, coordinates):
             style_function=lambda feature: colorstyles['exclusion']
         )
 
-        folium.Popup(sf).add_to(geojson)
+        folium.Tooltip(sf).add_to(geojson)
 
         geojson.add_to(m)
 
@@ -267,7 +267,7 @@ def display(inclusion, exclusion, data, coordinates):
             style_function=lambda feature: colorstyles['data']
         )
 
-        folium.Popup(sf).add_to(geojson)
+        folium.Tooltip(sf).add_to(geojson)
 
         geojson.add_to(m)
     '''
