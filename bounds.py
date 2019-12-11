@@ -36,7 +36,7 @@ def parse():
     parser.add_argument('input', nargs='?', default=None, help='address to query against configured shp files')
     parser.add_argument('-a', '--add', default=None, help='add shapefile path to config')
     parser.add_argument('-c', '--config-file', default=default_config, help='specify config file to use').completer = ret_all_configs
-    parser.add_argument('-v', '--visualize', action='store_true', help='visualize map with folium')
+    parser.add_argument('-v', '--visualize', nargs='?', default='', help='visualize map with folium and save to file. if no file is specified, a temporary map file will be created')
     parser.add_argument('-L', '--default-location', nargs='?', default='', help='configure default location (city, state, country, etc.) to append to searches. if no location is specified, will attempt to grab location from default bounds.config file')
     parser.add_argument('-G', '--google-api', nargs='?', default='', help='add Google Maps API key to configuration. if no key is specified, will attempt to grab key from default bounds.config file')
 
@@ -193,7 +193,7 @@ def shape2json(inputfile, outfile):
     geojson.write(json.dumps({"type": "FeatureCollection", "features": buffer}, indent=2, sort_keys=True, default=str) + "\n")
     geojson.close()
 
-def display(inclusion, exclusion, data, coordinates):
+def display(inclusion, exclusion, data, coordinates, folium_output):
     
     m = folium.Map(location=coordinates,
         tiles='Stamen Toner', # TODO add folium config to command line? or json file?
@@ -272,9 +272,8 @@ def display(inclusion, exclusion, data, coordinates):
         geojson.add_to(m)
     '''
 
-    folium_map = 'folium.html'
-    m.save(folium_map)
-    webbrowser.open('file://' + os.path.realpath(folium_map))
+    m.save(folium_output)
+    webbrowser.open('file://' + os.path.realpath(folium_output))
 
 def copyDefaultConfig(key, config):
     try:
@@ -366,8 +365,13 @@ def main():
         else:
             print(colored('Not bounded', 'red'))
 
-    if args.visualize:
-        display(*[config_params[x] for x in config_params], address_coordinates)
+    if args.visualize != '':
+        if args.visualize is None:
+            folium_output = '/tmp/folium.html'
+        else:
+            folium_output = args.visualize
+        
+        display(*[config_params[x] for x in config_params], address_coordinates, folium_output)
 
 if __name__ == '__main__':
     main()

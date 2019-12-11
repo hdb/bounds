@@ -18,7 +18,9 @@ sudo ln bounds.py /usr/local/bin/bounds
 ## Usage
 
 ```
-bounds [-h] [-a ADD] [-c CONFIG_FILE] [-v] [-L [DEFAULT_LOCATION]] [-G [GOOGLE_API]] input
+bounds [-h] [-a ADD] [-c CONFIG_FILE] [-v [VISUALIZE]] [-L [DEFAULT_LOCATION]]
+              [-G [GOOGLE_API]]
+              [input]
 
 query address against shapefile boundaries
 
@@ -30,7 +32,9 @@ optional arguments:
   -a ADD, --add ADD     add shapefile path to config
   -c CONFIG_FILE, --config-file CONFIG_FILE
                         specify config file to use
-  -v, --visualize       visualize map with folium
+  -v [VISUALIZE], --visualize [VISUALIZE]
+                        visualize map with folium and save to file. if no file is specified, a
+                        temporary map file will be created
   -L [DEFAULT_LOCATION], --default-location [DEFAULT_LOCATION]
                         configure default location (city, state, country, etc.) to append to
                         searches. if no location is specified, will attempt to grab location from
