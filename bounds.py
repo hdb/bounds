@@ -33,6 +33,7 @@ def parse():
         description='query address against shapefile boundaries',
         )
 
+    #TODO add option to send map
     parser.add_argument('input', nargs='?', default=None, help='address to query against configured shp files')
     parser.add_argument('-a', '--add', default=None, help='add shapefile path to config')
     parser.add_argument('-c', '--config-file', default=default_config, help='specify config file to use').completer = ret_all_configs
@@ -111,7 +112,7 @@ def queryNewSHP(path):
 
     input_field = fields_exs[fields_exs_formatted.index(answers["field"])][0]
 
-    input_name = input("What shold the Name be?: " )
+    input_name = input("What should the field name be?: " )
 
     input_dowhat = input("Should the point be (i)nside or (o)utside? (press return to skip if only querying for data): ")
 
@@ -160,6 +161,8 @@ def check_area(path, index, include):
 
 def validate_all(inclusion, exclusion, data):
 
+    not_failed = True
+
     for sf in data:
         data_result = check_area(data[sf]['path'], data[sf]['field'], True)
         print(sf + ': ' + str(data_result[1]) )
@@ -168,15 +171,19 @@ def validate_all(inclusion, exclusion, data):
         in_result = check_area(inclusion[sf]['path'],inclusion[sf]['field'], True)
         if not in_result[0]:
             print(address, 'not in', sf)
-            return False
+            not_failed = False
 
     for sf in exclusion:
         out_result = check_area(exclusion[sf]['path'],exclusion[sf]['field'], False)
         if not out_result[0]:
+            #if len(out_result[1]) > 0: 
+            # create some way of ignoring field names when meaningless, e.g., shapefile with no attributes besides a default id=123
             print(address, 'in', out_result[1], '(' + sf + ')')
-            return False
+            #else:
+            #     print(address, 'in', sf)
+            not_failed = False
 
-    return True
+    return not_failed
 
 def shape2json(inputfile, outfile):
     reader = shapefile.Reader(inputfile)
@@ -224,6 +231,7 @@ def display(inclusion, exclusion, data, coordinates, folium_output):
 
     if not os.path.exists(tempdir): os.mkdir(tempdir)
 
+    # TODO: currently creates overlays for each inclusion shapefile when it should actually be grabbing an intersection
     for sf in inclusion:
 
         geojsonfile = tempdir+os.path.splitext(os.path.basename(inclusion[sf]['path']))[0]

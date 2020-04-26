@@ -64,7 +64,7 @@ Boundaries are defined by ESRI shapefiles. To add a new shapefile to the configu
    zone_type (2.0, 1.0...)
    zoning_id (2488.0, 4088.0...)
 
-What shold the Name be?: zone_class
+What should the field name be?: zone_class
 Should the point be (i)nside or (o)utside? (press return to skip if only querying for data):
 defaulting to reading shapefile for data
 ```
