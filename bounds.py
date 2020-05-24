@@ -15,6 +15,8 @@ import sys
 import os
 from pathlib import Path
 import webbrowser
+from selenium import webdriver
+import time
 
 def parse():
 
@@ -37,7 +39,8 @@ def parse():
     parser.add_argument('input', nargs='?', default=None, help='address to query against configured shp files')
     parser.add_argument('-a', '--add', default=None, help='add shapefile path to config')
     parser.add_argument('-c', '--config-file', default=default_config, help='specify config file to use').completer = ret_all_configs
-    parser.add_argument('-v', '--visualize', nargs='?', default='', help='visualize map with folium and save to file. if no file is specified, a temporary map file will be created')
+    parser.add_argument('-v', '--visualize', nargs='?', default='', help='visualize map with folium and save to file. if no file is specified, a temporary map file will be created. if png file is given, will use selenium to take screenshot')
+    #parser.add_argument('-e', '--email', nargs='?', default='', help='address to send map to. if no address is given, will send to self') #TODO
     parser.add_argument('-L', '--default-location', nargs='?', default='', help='configure default location (city, state, country, etc.) to append to searches. if no location is specified, will attempt to grab location from default bounds.config file')
     parser.add_argument('-G', '--google-api', nargs='?', default='', help='add Google Maps API key to configuration. if no key is specified, will attempt to grab key from default bounds.config file')
 
@@ -47,7 +50,7 @@ def parse():
 
 def ret_all_configs(prefix, parsed_args, **kwargs):
     return (all_configs)
-    
+
 def loadConfig(configfile):
 
     try:
@@ -176,7 +179,7 @@ def validate_all(inclusion, exclusion, data):
     for sf in exclusion:
         out_result = check_area(exclusion[sf]['path'],exclusion[sf]['field'], False)
         if not out_result[0]:
-            #if len(out_result[1]) > 0: 
+            #if len(out_result[1]) > 0:
             # create some way of ignoring field names when meaningless, e.g., shapefile with no attributes besides a default id=123
             print(address, 'in', out_result[1], '(' + sf + ')')
             #else:
@@ -201,7 +204,7 @@ def shape2json(inputfile, outfile):
     geojson.close()
 
 def display(inclusion, exclusion, data, coordinates, folium_output):
-    
+
     m = folium.Map(location=coordinates,
         tiles='Stamen Toner', # TODO add folium config to command line? or json file?
         zoom_start=15
@@ -280,8 +283,25 @@ def display(inclusion, exclusion, data, coordinates, folium_output):
         geojson.add_to(m)
     '''
 
-    m.save(folium_output)
-    webbrowser.open('file://' + os.path.realpath(folium_output))
+    if not (folium_output.endswith('.png')):
+
+        m.save(folium_output)
+        webbrowser.open('file://' + os.path.realpath(folium_output))
+
+    else:
+
+        map_fn = '/tmp/folium.html'
+
+        m.save(map_fn)
+
+        delay=2
+        browser = webdriver.Firefox()
+        browser.get('file://' + map_fn)
+        #Give the map tiles some time to load
+        time.sleep(delay)
+        browser.save_screenshot(folium_output)
+        browser.quit()
+
 
 def copyDefaultConfig(key, config):
     try:
@@ -310,33 +330,33 @@ def main():
     if args.google_api != '':
 
         if args.google_api is None and args.config_file != default_config:
-            
+
             copyDefaultConfig('api_token', config_file)
 
         elif args.google_api is None:
             print('no token or config file specified.')
             print('add api token with `-G [TOKEN]`, or use `-c [CONFIG] -G` to copy api token from default config.')
-        
+
         else:
             setConfigOpt('api_token', args.google_api, config_file)
 
     if args.add is not None:
         shpconfigdata = queryNewSHP(args.add) + [config_file]
         addNewSHP(*shpconfigdata)
-    
+
     if args.default_location != '':
 
         if args.default_location is None and args.config_file != default_config:
-            
+
             copyDefaultConfig('location', config_file)
 
         elif args.default_location is None:
             print('no location or config file specified.')
             print('add location with `-L [LOCATION]`, or use `-c [CONFIG] -L` to copy location from default config.')
-        
+
         else:
             setConfigOpt('location', args.default_location, config_file)
-    
+
     else:
         config = loadConfig(config_file)
 
@@ -378,7 +398,7 @@ def main():
             folium_output = '/tmp/folium.html'
         else:
             folium_output = args.visualize
-        
+
         display(*[config_params[x] for x in config_params], address_coordinates, folium_output)
 
 if __name__ == '__main__':
