@@ -16,6 +16,7 @@ import os
 from pathlib import Path
 import webbrowser
 from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
 import time
 
 def parse():
@@ -295,7 +296,9 @@ def display(inclusion, exclusion, data, coordinates, folium_output):
         m.save(map_fn)
 
         delay=2
-        browser = webdriver.Firefox()
+        firefox_options = Options()
+        firefox_options.headless = True
+        browser = webdriver.Firefox(options=firefox_options)
         browser.get('file://' + map_fn)
         #Give the map tiles some time to load
         time.sleep(delay)
