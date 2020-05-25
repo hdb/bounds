@@ -18,9 +18,7 @@ sudo ln bounds.py /usr/local/bin/bounds
 ## Usage
 
 ```
-bounds [-h] [-a ADD] [-c CONFIG_FILE] [-v [VISUALIZE]] [-L [DEFAULT_LOCATION]]
-              [-G [GOOGLE_API]]
-              [input]
+bounds [-h] [-a ADD] [-c CONFIG_FILE] [-v [VISUALIZE]] [-e [EMAIL]] [-L [DEFAULT_LOCATION]] [-G [GOOGLE_API]] [input]
 
 query address against shapefile boundaries
 
@@ -33,15 +31,15 @@ optional arguments:
   -c CONFIG_FILE, --config-file CONFIG_FILE
                         specify config file to use
   -v [VISUALIZE], --visualize [VISUALIZE]
-                        visualize map with folium and save to file. if no file is specified, a
-                        temporary map file will be created
+                        visualize map with folium and save to file. if no file is specified, a temporary map file will be created. if png file is given,
+                        will use selenium to take screenshot
+  -e [EMAIL], --email [EMAIL]
+                        email address to send map to. if no address is given, will send to self
   -L [DEFAULT_LOCATION], --default-location [DEFAULT_LOCATION]
-                        configure default location (city, state, country, etc.) to append to
-                        searches. if no location is specified, will attempt to grab location from
-                        default bounds.config file
+                        configure default location (city, state, country, etc.) to append to searches. if no location is specified, will attempt to grab
+                        location from default bounds.config file
   -G [GOOGLE_API], --google-api [GOOGLE_API]
-                        add Google Maps API key to configuration. if no key is specified, will
-                        attempt to grab key from default bounds.config file
+                        add Google Maps API key to configuration. if no key is specified, will attempt to grab key from default bounds.config file
 ```
 
 ### Adding shapefiles
@@ -79,9 +77,15 @@ bounds allows multiple configurations which are callable with `-c`. Use `bounds 
 
 If you have set a Google Maps API token or location in your default configuration, you can export to other config files using `bounds -c new-config.json -G` or `bounds -c new-config.json -L` without arguments.
 
-`bounds -c [TAB]` supports autocompletion for config files in the configuration directory (`~/.config/bounds/`). To set-up autocomplete run `echo 'eval "$(register-python-argcomplete bounds)"' >> ~/.bash_profile` and open a new terminal instance. 
+`bounds -c [TAB]` supports autocompletion for config files in the configuration directory (`~/.config/bounds/`). To set-up autocomplete run `echo 'eval "$(register-python-argcomplete bounds)"' >> ~/.bash_profile` and open a new terminal instance.
 
 
-### Visualizations
+### Interactive and Static Maps
 
 bounds uses [folium](https://python-visualization.github.io/folium/index.html) to display maps and defaults to using the excellent [Stamen Toner](http://maps.stamen.com/toner/) tile set. See the [quick start guide](https://python-visualization.github.io/folium/quickstart.html) for more details on configuring folium options.
+
+Any export file ending in 'png' will be saved as a static map (e.g., `bounds '742 Evergreen Terrace' -v map.png`). bounds accomplishes this by taking screenshots with headless Firefox, so in order for static maps to work you need to have Firefox version 56 or later installed.
+
+### Email Static Maps
+
+Use `-e` to email a static png of the map using [yagmail](https://github.com/kootenpv/yagmail).

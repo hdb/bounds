@@ -17,6 +17,8 @@ from pathlib import Path
 import webbrowser
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
+import yagmail
+import pypandoc
 import time
 
 def parse():
@@ -41,7 +43,7 @@ def parse():
     parser.add_argument('-a', '--add', default=None, help='add shapefile path to config')
     parser.add_argument('-c', '--config-file', default=default_config, help='specify config file to use').completer = ret_all_configs
     parser.add_argument('-v', '--visualize', nargs='?', default='', help='visualize map with folium and save to file. if no file is specified, a temporary map file will be created. if png file is given, will use selenium to take screenshot')
-    #parser.add_argument('-e', '--email', nargs='?', default='', help='address to send map to. if no address is given, will send to self') #TODO
+    parser.add_argument('-e', '--email', nargs='?', default='', help='email address to send map to. if no address is given, will send to self') #TODO
     parser.add_argument('-L', '--default-location', nargs='?', default='', help='configure default location (city, state, country, etc.) to append to searches. if no location is specified, will attempt to grab location from default bounds.config file')
     parser.add_argument('-G', '--google-api', nargs='?', default='', help='add Google Maps API key to configuration. if no key is specified, will attempt to grab key from default bounds.config file')
 
@@ -305,6 +307,20 @@ def display(inclusion, exclusion, data, coordinates, folium_output):
         browser.save_screenshot(folium_output)
         browser.quit()
 
+def sendEmail(display_config_params, coordinates, address, to, sending_email, message=None): #TODO
+
+    yag = yagmail.SMTP(sending_email, oauth2_file="~/.config/bounds/gm_oauth2.json")
+
+    if message is None:
+        contents = [pypandoc.convert_text(
+            'Sent with [bounds](https://github.com/hdb/bounds)',
+        to='html', format='md')]
+    else:
+        contents=message
+
+    img_file = '/tmp/folium.png'
+    display(*display_config_params, coordinates, img_file)
+    yag.send(to, address, contents, attachments=img_file)
 
 def copyDefaultConfig(key, config):
     try:
@@ -403,6 +419,29 @@ def main():
             folium_output = args.visualize
 
         display(*[config_params[x] for x in config_params], address_coordinates, folium_output)
+
+    if args.email != '':
+        if not 'email' in config:
+            print('no email found in', config_file)
+            email=input('please enter sending email address to configure with oauth: ')
+            alias=input('what alias do you want to use for emails? [enter to skip]: ')
+            if('@' in email):
+                if not email.endswith('@gmail.com'):
+                    print('bounds email option currently only works with gmail')
+                    print('quitting...')
+                    exit()
+            else:
+                print('reading', email, 'as', email+'@gmail.com')
+                email += '@gmail.com'
+            if len(alias) == 0:
+                alias = email
+            email_dict = {email:alias}
+            setConfigOpt('email', email_dict, config_file)
+
+        else:
+            email_dict = config['email']
+
+        sendEmail([config_params[x] for x in config_params], address_coordinates, address, args.email, email_dict)
 
 if __name__ == '__main__':
     main()
