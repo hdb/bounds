@@ -298,7 +298,7 @@ def display(inclusion, exclusion, data, coordinates, folium_output):
         delay=2
         firefox_options = Options()
         firefox_options.headless = True
-        browser = webdriver.Firefox(options=firefox_options)
+        browser = webdriver.Firefox(options=firefox_options, service_log_path='/tmp/geckodriver.log')
         browser.get('file://' + map_fn)
         #Give the map tiles some time to load
         time.sleep(delay)
