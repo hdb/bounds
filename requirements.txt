@@ -1,0 +1,10 @@
+pypandoc>=1.4
+selenium>=3.141.0
+geocoder>=1.38.1
+Shapely>=1.6.4.post2
+yagmail>=0.11.224
+folium>=0.10.1
+termcolor>=1.1.0
+inquirer>=2.6.3
+argcomplete>=1.10.3
+pyshp>=2.1.0
