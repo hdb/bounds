@@ -9,7 +9,7 @@
 ## Installation
 
 ```
-git clone git@github.com/hdbhdb/bounds.git
+git clone git@github.com/hdb/bounds.git
 cd bounds
 pip install -r requirements.txt
 sudo ln bounds.py /usr/local/bin/bounds
